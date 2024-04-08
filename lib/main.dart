@@ -1,10 +1,22 @@
+// import 'dart:convert';
+// import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:test_http/services/api_service.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'models/article.dart';
+
+class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+  }
+}
 
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 
@@ -37,11 +49,43 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ApiService apiService = ApiService();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  // void _launchURL(String url) async {
+  //   Uri uri = Uri.parse(url);
+  //   if (await canLaunchUrl(uri)) {
+  //     await launchUrl(uri);
+  //   } else {
+  //     throw 'Could not launch $uri';
+  //   }
+  // }
+  Future<void> _launchURL(String url) async {
+    Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
+
+  Widget buildItemList(Article record){
+    if (record != null){
+      return Card(
+        elevation: 5,
+        child: ListTile(
+          leading: Image.network("${record.urlToImage}"),
+          title: Text("${record.title}"),
+          subtitle: Text("${record.author}"),
+          trailing: ElevatedButton(onPressed: () {
+            setState(() {
+              _launchURL('${record.url}');
+            });
+          },
+          child: const Icon(Icons.link)),
+        ),
+      );
+
+    }else{
+      return const Text("failed to display the item");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,12 +96,14 @@ class _MyHomePageState extends State<MyHomePage> {
       body: FutureBuilder<List<Article>>(
         future: apiService.getArticles() ,
         builder: (BuildContext context, AsyncSnapshot<List<Article>> snapshot) {
-          List<Article>? record = snapshot.data;
+          var record = snapshot.data;
           logger.i(record);
           if(snapshot.hasData){
             return ListView.builder(
+                itemCount:snapshot.data?.length,
                 itemBuilder: (context, index) {
-                  return Text("record[$index] : $record ");
+                  return buildItemList(record![index]);
+                    // Text("record[$index] : ${record![index].title} ");
                 },
             );
           }else{

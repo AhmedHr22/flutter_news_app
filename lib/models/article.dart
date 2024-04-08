@@ -1,34 +1,41 @@
-class Article{
-  final String author;
-  final String title;
-  final String description;
-  final String urlToImage;
-  final String publishedAt;
-  final String content;
+class Article {
+  String? author;
+  String? title;
+  String? description;
+  String? url;
+  String? urlToImage;
+  String? publishedAt;
+  String? content;
 
   Article(
-      this.author,
-      this.title,
-      this.description,
-      this.urlToImage,
-      this.publishedAt,
-      this.content,
-  );
-
-  factory Article.fromJson(Map<String , dynamic>json){
-    return switch(json){
       {
-        "author":String author,
-        "title":String title,
-        "description":String description,
-        "urlToImage":String urlToImage,
-        "publishedAt":String publishedAt,
-        "content":String content,
-      } => Article(author, title, description, urlToImage, publishedAt, content),
-      _ =>throw Exception("failed to load an article")
-    };
+        this.author,
+        this.title,
+        this.description,
+        this.url,
+        this.urlToImage,
+        this.publishedAt,
+        this.content});
+
+  Article.fromJson(Map<String, dynamic> json) {
+    author = json['author'];
+    title = json['title'];
+    description = json['description'];
+    url = json['url'];
+    urlToImage = json['urlToImage'];
+    publishedAt = json['publishedAt'];
+    content = json['content'];
   }
 
-
-
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['author'] = this.author;
+    data['title'] = this.title;
+    data['description'] = this.description;
+    data['url'] = this.url;
+    data['urlToImage'] = this.urlToImage;
+    data['publishedAt'] = this.publishedAt;
+    data['content'] = this.content;
+    return data;
+  }
 }
